@@ -17,9 +17,8 @@ const queue = new Map();
 // sound values
 const startingSoundValue = 35;
 
-
 client.once('ready', () => {
-    console.log('Ready!');
+    console.log('DiscordBot is Ready!');
 });
 client.once('reconnecting', () => {
     console.log('Reconnecting!');
@@ -133,7 +132,7 @@ function play(guild, song) {
         })
         .on("error", error => console.error(error));
     dispatcher.setVolumeLogarithmic(serverQueue.volume / 5);
-    serverQueue.textChannel.send(`Start playing: **${song.title}**`);
+    serverQueue.textChannel.send(`Started playing: **${song.title}**`);
 }
 
 function skip(message, serverQueue) {
@@ -160,7 +159,6 @@ async function search(message, serverQueue) {
     if (!message.member.voice.channel) {
         return message.channel.send("You have to be in a voice channel to search musics!");
     }
-    // this condition might be wrong
     if (!message) {
         return message.channel.send("The name of the song can't be null!");
     }
