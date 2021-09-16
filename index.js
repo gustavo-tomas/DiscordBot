@@ -1,15 +1,21 @@
+const YouTube = require("discord-youtube-api");
 const Discord = require('discord.js');
+
+// api and authorization keys (keep same order in config.json)
 const {
     prefix,
-    token,
+    discord_key,
+    google_key
 } = require('./config.json');
+
 const ytdl = require('ytdl-core');
+const youtube = new YouTube(google_key);
 
 const client = new Discord.Client();
 const queue = new Map();
 
 // sound values
-const startingSoundValue = 3;
+const startingSoundValue = 35;
 
 
 client.once('ready', () => {
@@ -42,6 +48,10 @@ client.on('message', async message => {
     }
     else if (message.content.startsWith(`${prefix}stop`)) {
         stop(message, serverQueue);
+        return;
+    }
+    else if (message.content.startsWith(`${prefix}search`)) {
+        search(message, serverQueue);
         return;
     }
     else {
@@ -132,7 +142,6 @@ function skip(message, serverQueue) {
     }
     if (!serverQueue) {
         return message.channel.send("There is no song to skip!");
-        serverQueue.connection.dispatcher.end();
     }
 }
 
@@ -140,13 +149,29 @@ function stop(message, serverQueue) {
     if (!message.member.voice.channel) {
         return message.channel.send("You have to be in a voice channel to stop the music!");
     }
-
     if (!serverQueue) {
         return message.channel.send("There is no song to stop!");
     }
-
     serverQueue.songs = [];
     serverQueue.connection.dispatcher.end();
 }
 
-client.login(token);
+async function search(message, serverQueue) {
+    if (!message.member.voice.channel) {
+        return message.channel.send("You have to be in a voice channel to search musics!");
+    }
+    // this condition might be wrong
+    if (!message) {
+        return message.channel.send("The name of the song can't be null!");
+    }
+    
+    finalMessage = message;
+    searchName = message.content.replace("!search", "");
+    const video = await youtube.searchVideos(searchName);
+    
+    finalMessage.content = "!p " + video.url;
+    execute(finalMessage, serverQueue);
+    return;
+}
+
+client.login(discord_key);
