@@ -8,6 +8,10 @@ const ytdl = require('ytdl-core');
 const client = new Discord.Client();
 const queue = new Map();
 
+// sound values
+const startingSoundValue = 3;
+
+
 client.once('ready', () => {
     console.log('Ready!');
 });
@@ -73,7 +77,7 @@ async function execute(message, serverQueue) {
             voiceChannel: voiceChannel,
             connection: null,
             songs: [],
-            volume: 3,
+            volume: startingSoundValue,
             playing: true,
         };
 
