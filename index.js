@@ -1,5 +1,5 @@
-const YouTube = require("discord-youtube-api");
 const Discord = require('discord.js');
+const yts = require('yt-search');
 
 // api and authorization keys (keep same order in config.json)
 const {
@@ -9,7 +9,6 @@ const {
 } = require('./config.json');
 
 const ytdl = require('ytdl-core');
-const youtube = new YouTube(google_key);
 
 const client = new Discord.Client();
 const queue = new Map();
@@ -155,20 +154,17 @@ function stop(message, serverQueue) {
     serverQueue.connection.dispatcher.end();
 }
 
+// TODO: serverQueue is undefined
 async function search(message, serverQueue) {
     if (!message.member.voice.channel) {
-        return message.channel.send("You have to be in a voice channel to search musics!");
+        return message.channel.send("You have to be in a voice channel to search a music!");
     }
-    if (!message) {
-        return message.channel.send("The name of the song can't be null!");
-    }
-    
-    finalMessage = message;
-    searchName = message.content.replace("!search", "");
-    const video = await youtube.searchVideos(searchName);
-    
-    finalMessage.content = "!p " + video.url;
-    execute(finalMessage, serverQueue);
+
+    message.content = message.content.replace("!search", "");
+    const query = await yts(message.content);
+    const video = query.videos[0];
+    message.content = "!p " + video.url;
+    execute(message, serverQueue);
     return;
 }
 
