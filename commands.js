@@ -1,9 +1,11 @@
 import yts from 'yt-search';
 import ytdl from 'ytdl-core';
 import { queue } from './index.js';
+import { client } from './index.js';
 
 // sound values
 const startingSoundValue = 3;
+const ANNOYANCE_FACTOR = 5;
 
 export async function execute(message, serverQueue) {
     const args = message.content.split(" ");    // !p url -> args[0] = !p ; args[1] = url
@@ -11,7 +13,7 @@ export async function execute(message, serverQueue) {
     // checks permissions
     const voiceChannel = message.member.voice.channel;
     if (!voiceChannel) {
-        return message.channel.send("You need to be in a voice channel to play music!");
+        return message.channel.send("You need to be in a voice channel to do that!");
     }
     
     const permissions = voiceChannel.permissionsFor(message.client.user);
@@ -110,6 +112,47 @@ export function stop(message, serverQueue) {
     if (!serverQueue) {
         return message.channel.send("There is no song to stop!");
     }
+    message.channel.send("**Leaving...**");
     serverQueue.songs = [];
     serverQueue.connection.dispatcher.end();
+}
+
+// TODO: update help commands with next, n, leave,  ... 
+export function help(message) {
+    const helpMessage = `**Hello ${message.author}!**\n` + 
+    `My name is ${client.user}. I can play music for you.\n` +
+    `To queue a song just type *!play song_url* or *!p song_url*\n` +
+    `You can also search by name instead of using an url.\n` +
+    `To skip the current song, type *!skip*\n` +
+    `To stop the bot, type *!stop*\n` +
+    `Type *!commands* to see the list of available commands`;
+    return message.channel.send(helpMessage);
+}
+
+export function commands(message) {
+    const commandsMessage = `**${client.user} COMMANDS**\n` +
+                            `**!play** or **!p**       -> Queue a song\n` +
+                            `**!search** or **!queue** -> Same as play\n` +
+                            `**!skip**                 -> Skip current song\n` +
+                            `**!next** or **!n**       -> Same as skip\n` +
+                            `**!stop** or **!leave**   -> Stop the bot\n` +
+                            `**!c** or **!commands**   -> Show all available commands` +
+                            `**!help** or **h**        -> Show help`;
+    return message.channel.send(commandsMessage);
+}
+
+export function seixas(message) {
+    // for (let i = 0; i < ANNOYANCE_FACTOR; i++) {
+    const ownerId = message.guild.ownerID;
+    const list = client.guilds.cache.get(message.guild.id);
+    const ownerName = list.members.cache.filter(filterOwnerId);
+
+    function filterOwnerId(value) {
+        return value === ownerId;
+    }
+
+    console.log(ownerId)
+    console.log(ownerName)
+    console.log(ownerName.user)
+    // }
 }
