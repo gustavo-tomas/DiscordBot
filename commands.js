@@ -100,6 +100,7 @@ export function skip(message, serverQueue) {
     if (!serverQueue) {
         return message.channel.send("There is no song to skip!");
     }
+    serverQueue.connection.dispatcher.end();
 }
 
 export function stop(message, serverQueue) {
