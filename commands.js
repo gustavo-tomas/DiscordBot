@@ -71,7 +71,6 @@ export async function execute(message, serverQueue) {
         }
     } else {
         serverQueue.songs.push(song);
-        console.log(serverQueue.songs);
         return message.channel.send(`${song.title} has been added to the queue!`);
     }
 }
@@ -137,12 +136,12 @@ export function commands(message) {
         return message.channel.send("You have to be in a voice channel to do that!");
     }
     const commandsMessage = `**${client.user} COMMANDS**\n` +
-                            `**!play** or **!p**       -> Queue a song\n` +
-                            `**!search** or **!queue** -> Same as play\n` +
-                            `**!skip**                 -> Skip current song\n` +
-                            `**!next** or **!n**       -> Same as skip\n` +
-                            `**!stop** or **!leave**   -> Stop the bot\n` +
-                            `**!c** or **!commands**   -> Show all available commands` +
-                            `**!help** or **h**        -> Show help`;
+                            `**!play** or **!p**        -> Queue a song\n` +
+                            `**!search** or **!queue**  -> Same as play\n` +
+                            `**!skip**                  -> Skip current song\n` +
+                            `**!next** or **!n**        -> Same as skip\n` +
+                            `**!stop** or **!leave**    -> Stop the bot\n` +
+                            `**!c** or **!commands**    -> Show all available commands\n` +
+                            `**!help** or **h**         -> Show help`;
     return message.channel.send(commandsMessage);
 }

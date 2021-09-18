@@ -1,10 +1,9 @@
 import * as Discord from 'discord.js';
 import { commands, execute, help, skip, stop } from './commands.js';
-import { Config } from './config.js';
 
 // Api and authorization keys
-const PREFIX = Config.PREFIX;
-const DISCORD_KEY = Config.DISCORD_KEY;
+const PREFIX = process.env.PREFIX;
+const DISCORD_KEY = process.env.DISCORD_KEY;
 
 export const client = new Discord.Client();
 export const queue = new Map();
