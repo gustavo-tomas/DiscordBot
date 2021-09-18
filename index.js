@@ -61,4 +61,4 @@ client.on('message', async message => {
     }
 })
 
-client.login(DISCORD_KEY);
+client.login(DISCORD_KEY).catch(err => console.error(err));
