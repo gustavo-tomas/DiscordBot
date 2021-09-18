@@ -71,7 +71,6 @@ export async function execute(message, serverQueue) {
         }
     } else {
         serverQueue.songs.push(song);
-        console.log(serverQueue.songs);
         return message.channel.send(`${song.title} has been added to the queue!`);
     }
 }
