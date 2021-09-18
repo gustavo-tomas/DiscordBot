@@ -1,6 +1,5 @@
 import * as Discord from 'discord.js';
 import { commands, execute, help, skip, stop } from './commands.js';
-// import { Config } from './config.js';
 
 // Api and authorization keys
 const PREFIX = process.env.PREFIX;
@@ -61,4 +60,4 @@ client.on('message', async message => {
     }
 })
 
-client.login(DISCORD_KEY).catch(err => console.error(err));
+client.login(DISCORD_KEY);
