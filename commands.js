@@ -3,14 +3,13 @@ import ytdl from 'ytdl-core';
 import { queue } from './index.js';
 import { client } from './index.js';
 
-// sound values
+// Sound values
 const startingSoundValue = 3;
-const ANNOYANCE_FACTOR = 5;
 
 export async function execute(message, serverQueue) {
-    const args = message.content.split(" ");    // !p url -> args[0] = !p ; args[1] = url
+    const args = message.content.split(" ");    // !p url -> (args[0] = !p ; args[1] = url)
 
-    // checks permissions
+    // Checks permissions
     const voiceChannel = message.member.voice.channel;
     if (!voiceChannel) {
         return message.channel.send("You need to be in a voice channel to do that!");
@@ -21,15 +20,16 @@ export async function execute(message, serverQueue) {
         return message.channel.send("I need permission to join and speak in this channel!");
     }
     
+    // Expression matches a url
     var videoUrl;
     const expression = /[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/;
     const urlExpression = new RegExp(expression);
 
-    // complete URL
+    // Complete URL
     if (args[1].match(urlExpression)) {
         videoUrl = args[1];
     } else {
-        // search
+        // Search
         videoUrl = await (await yts(message.content.replace("!p", ""))).videos[0].url;
     }
     const songInfo = await ytdl.getInfo(videoUrl);
@@ -38,7 +38,7 @@ export async function execute(message, serverQueue) {
         url: songInfo.videoDetails.video_url,
     };
     
-    // checks if song is playing
+    // Checks if song is playing
     if (!serverQueue) {
         // Creating the contract for queue
         const queueContruct = {
@@ -117,9 +117,12 @@ export function stop(message, serverQueue) {
     serverQueue.connection.dispatcher.end();
 }
 
-// TODO: update help commands with next, n, leave,  ... 
+// Dont forget to update help commands after changes
 export function help(message) {
-    const helpMessage = `**Hello ${message.author}!**\n` + 
+    if (!message.member.voice.channel) {
+        return message.channel.send("You have to be in a voice channel to do that!");
+    }
+    const helpMessage = `**Hello ${message.author}!**\n` +
     `My name is ${client.user}. I can play music for you.\n` +
     `To queue a song just type *!play song_url* or *!p song_url*\n` +
     `You can also search by name instead of using an url.\n` +
@@ -130,6 +133,9 @@ export function help(message) {
 }
 
 export function commands(message) {
+    if (!message.member.voice.channel) {
+        return message.channel.send("You have to be in a voice channel to do that!");
+    }
     const commandsMessage = `**${client.user} COMMANDS**\n` +
                             `**!play** or **!p**       -> Queue a song\n` +
                             `**!search** or **!queue** -> Same as play\n` +
@@ -139,20 +145,4 @@ export function commands(message) {
                             `**!c** or **!commands**   -> Show all available commands` +
                             `**!help** or **h**        -> Show help`;
     return message.channel.send(commandsMessage);
-}
-
-export function seixas(message) {
-    // for (let i = 0; i < ANNOYANCE_FACTOR; i++) {
-    const ownerId = message.guild.ownerID;
-    const list = client.guilds.cache.get(message.guild.id);
-    const ownerName = list.members.cache.filter(filterOwnerId);
-
-    function filterOwnerId(value) {
-        return value === ownerId;
-    }
-
-    console.log(ownerId)
-    console.log(ownerName)
-    console.log(ownerName.user)
-    // }
 }
