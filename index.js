@@ -1,45 +1,59 @@
 import * as Discord from 'discord.js';
-import { execute, skip, stop } from './commands.js';
+import { commands, execute, help, skip, stop } from './commands.js';
 import { Config } from './config.js';
 
-// api and authorization keys (keep same order in config.json)
-const prefix = Config.prefix;
-const discord_key = Config.discord_key;
+// Api and authorization keys
+const PREFIX = Config.PREFIX;
+const DISCORD_KEY = Config.DISCORD_KEY;
 
-const client = new Discord.Client();
+export const client = new Discord.Client();
 export const queue = new Map();
 
 client.once('ready', () => {
     console.log('DiscordBot is Ready!');
 });
 client.once('reconnecting', () => {
-    console.log('Reconnecting!');
+    console.log('DiscordBot is Reconnecting!');
 });
 client.once('disconnect', () => {
-    console.log('Disconnect!');
+    console.log('DiscordBot Disconnected!');
 });
 
-// read messages
+// Read messages
 client.on('message', async message => {
     if (message.author.bot) return;
-    if (!message.content.startsWith(prefix)) return;
+    if (!message.content.startsWith(PREFIX)) return;
     
-    // music queue
+    // Music queue
     const serverQueue = queue.get(message.guild.id);
     
-    // bot commands
-    if (message.content.startsWith(`${prefix}play`) ||
-        message.content.startsWith(`${prefix}p`) ||
-        message.content.startsWith(`${prefix}search`)) {
+    // Bot commands
+    if (message.content.startsWith(`${PREFIX}play`)   ||
+        message.content.startsWith(`${PREFIX}p`)      ||
+        message.content.startsWith(`${PREFIX}search`) ||
+        message.content.startsWith(`${PREFIX}queue`)) {
         execute(message, serverQueue);
         return;
     }
-    else if (message.content.startsWith(`${prefix}skip`)) {
+    else if (message.content.startsWith(`${PREFIX}skip`) ||
+            message.content.startsWith(`${PREFIX}next`)  ||
+            message.content.startsWith(`${PREFIX}n`)) {
         skip(message, serverQueue);
         return;
     }
-    else if (message.content.startsWith(`${prefix}stop`)) {
+    else if (message.content.startsWith(`${PREFIX}stop`) ||
+            message.content.startsWith(`${PREFIX}leave`)) {
         stop(message, serverQueue);
+        return;
+    }
+    else if (message.content.startsWith(`${PREFIX}help`) ||
+            message.content.startsWith(`${PREFIX}h`)) {
+        help(message);
+        return;
+    }
+    else if (message.content.startsWith(`${PREFIX}commands`) ||
+            message.content.startsWith(`${PREFIX}c`)) {
+        commands(message);
         return;
     }
     else {
@@ -47,4 +61,4 @@ client.on('message', async message => {
     }
 })
 
-client.login(discord_key);
+client.login(DISCORD_KEY);
