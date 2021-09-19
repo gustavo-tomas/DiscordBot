@@ -71,7 +71,7 @@ export async function execute(message, serverQueue) {
         }
     } else {
         serverQueue.songs.push(song);
-        return message.channel.send(`${song.title} has been added to the queue!`);
+        return message.channel.send(`**${song.title}** has been added to the queue!`);
     }
 }
 
