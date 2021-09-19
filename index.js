@@ -1,5 +1,5 @@
 import * as Discord from 'discord.js';
-import { commands, execute, help, skip, stop } from './commands.js';
+import { commands, execute, help, skip, stop, seixas } from './commands.js';
 
 // Api and authorization keys
 const PREFIX = process.env.PREFIX;
@@ -62,6 +62,10 @@ client.on('message', async message => {
     else if (message.content.startsWith(`${PREFIX}commands`) ||
             message.content.startsWith(`${PREFIX}c`)) {
         commands(message);
+        return;
+    }
+    else if (message.content.startsWith(`${PREFIX}seixas`)) {
+        seixas(message);
         return;
     }
     else {
