@@ -5,6 +5,9 @@ import { commands, execute, help, skip, stop, seixas } from './commands.js';
 const PREFIX = process.env.PREFIX;
 const DISCORD_KEY = process.env.DISCORD_KEY;
 
+// Current voice channel and ID
+let voiceChannel, voiceChannelID;
+
 export const client = new Discord.Client();
 export const queue = new Map();
 
@@ -25,6 +28,10 @@ client.on('message', async message => {
     if (message.author.bot) return;
     if (!message.content.startsWith(PREFIX)) return;
     
+    // Updates current voice channel and channelID
+    voiceChannel   = message.member.voice.channel;
+    voiceChannelID = message.member.voice.channelID;
+
     // Music queue
     const serverQueue = queue.get(message.guild.id);
 
@@ -65,3 +72,17 @@ client.on('message', async message => {
         message.channel.send("Invalid command!");
     }
 })
+
+// Checks if there are users in curr channel and leaves otherwise
+client.on("voiceStateUpdate", (oldMember, newMember) => {
+    if (!voiceChannelID) return;
+    if (oldMember.channelID != newMember.channelID && oldMember.channelID == voiceChannelID) {
+        const serverQueue = queue.get(voiceChannel.guild.id);
+        if (serverQueue) {
+            serverQueue.voiceChannel.leave();
+            queue.delete(voiceChannel.guild.id);
+        }
+        voiceChannel = null;
+        voiceChannelID = null;
+    }
+});
