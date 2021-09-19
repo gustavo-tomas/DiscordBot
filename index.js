@@ -23,6 +23,18 @@ client.once('disconnect', () => {
     console.log('DiscordBot Disconnected!');
 });
 
+// Set bot username and status on startup
+client.on('ready', () => {
+    client.user.setUsername("DJ BALA");
+    client.user.setPresence({
+        status: 'online',
+        activity: {
+            name: "!help",
+            type: "PLAYING"
+        }
+    });
+});
+
 // Read messages
 client.on('message', async message => {
     if (message.author.bot) return;
