@@ -1,5 +1,5 @@
 import * as Discord from 'discord.js';
-import { commands, execute, help, skip, stop } from './commands.js';
+import { commands, execute, help, skip, stop, seixas } from './commands.js';
 
 // Api and authorization keys
 const PREFIX = process.env.PREFIX;
@@ -7,6 +7,8 @@ const DISCORD_KEY = process.env.DISCORD_KEY;
 
 export const client = new Discord.Client();
 export const queue = new Map();
+
+client.login(DISCORD_KEY);
 
 client.once('ready', () => {
     console.log('DiscordBot is Ready!');
@@ -25,7 +27,7 @@ client.on('message', async message => {
     
     // Music queue
     const serverQueue = queue.get(message.guild.id);
-    
+
     // Bot commands
     if (message.content.startsWith(`${PREFIX}play`)   ||
         message.content.startsWith(`${PREFIX}p`)      ||
@@ -55,9 +57,11 @@ client.on('message', async message => {
         commands(message);
         return;
     }
+    else if (message.content.startsWith(`${PREFIX}seixas`)) {
+        seixas(message);
+        return;
+    }
     else {
         message.channel.send("Invalid command!");
     }
 })
-
-client.login(DISCORD_KEY);

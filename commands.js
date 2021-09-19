@@ -145,3 +145,16 @@ export function commands(message) {
                             `**!help** or **h**         -> Show help`;
     return message.channel.send(commandsMessage);
 }
+
+export async function seixas(message) {
+    const args = message.content.split(" ");
+    let owner = await client.users.fetch(message.guild.ownerID);
+    if (args.length < 2 || isNaN(Number(args[1]))) {
+        return message.channel.send(`Atende ${owner}`);
+    } else {
+        for (let i = 0; i < Number(args[1]); i++) {
+            message.channel.send(`Atende ${owner}`);
+        }
+        return;
+    }
+}
