@@ -5,11 +5,13 @@ import { commands, execute, help, skip, stop } from './commands.js';
 const PREFIX = process.env.PREFIX;
 const DISCORD_KEY = process.env.DISCORD_KEY;
 
+// Current voice channel and ID
+let voiceChannel, voiceChannelID;
+
 export const client = new Discord.Client();
 export const queue = new Map();
 
-// Number of current users in a voice chat
-let globalMessageGuild;
+client.login(DISCORD_KEY);
 
 client.once('ready', () => {
     console.log('DiscordBot is Ready!');
@@ -26,9 +28,12 @@ client.on('message', async message => {
     if (message.author.bot) return;
     if (!message.content.startsWith(PREFIX)) return;
     
+    // Updates current voice channel and channelID
+    voiceChannel   = message.member.voice.channel;
+    voiceChannelID = message.member.voice.channelID;
+
     // Music queue
     const serverQueue = queue.get(message.guild.id);
-    globalMessageGuild = message.guild;
 
     // Bot commands
     if (message.content.startsWith(`${PREFIX}play`)   ||
@@ -64,21 +69,16 @@ client.on('message', async message => {
     }
 })
 
-// voiceStateUpdate
-/* Emitted whenever a user changes voice state - e.g. joins/leaves a channel, mutes/unmutes.
-PARAMETER    TYPE             DESCRIPTION
-oldMember    GuildMember      The member before the voice state update
-newMember    GuildMember      The member after the voice state update    */
+// Checks if there are users in curr channel and leaves otherwise
 client.on("voiceStateUpdate", (oldMember, newMember) => {
-    if (newMember != oldMember &&
-        newMember.channelID == null) {
-        // console.log("QUEUE = ", queue);
-        // console.log("GMG = ", globalMessageGuild);
-        if (globalMessageGuild != null) {
-            queue.get(globalMessageGuild.id).voiceChannel.leave();
-            queue.delete(globalMessageGuild.id);
+    if (!voiceChannelID) return;
+    if (oldMember.channelID != newMember.channelID && oldMember.channelID == voiceChannelID) {
+        const serverQueue = queue.get(voiceChannel.guild.id);
+        if (serverQueue) {
+            serverQueue.voiceChannel.leave();
+            queue.delete(voiceChannel.guild.id);
         }
+        voiceChannel = null;
+        voiceChannelID = null;
     }
 });
-
-client.login(DISCORD_KEY);
