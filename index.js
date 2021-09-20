@@ -13,18 +13,9 @@ export const queue  = new Map();
 
 client.login(DISCORD_KEY);
 
+// Set bot username and status on startup
 client.once('ready', () => {
     console.log('DiscordBot is Ready!');
-});
-client.once('reconnecting', () => {
-    console.log('DiscordBot is Reconnecting!');
-});
-client.once('disconnect', () => {
-    console.log('DiscordBot Disconnected!');
-});
-
-// Set bot username and status on startup
-client.on('ready', () => {
     client.user.setUsername("DJ BALA");
     client.user.setPresence({
         status: 'online',
@@ -33,6 +24,12 @@ client.on('ready', () => {
             type: "PLAYING"
         }
     });
+});
+client.once('reconnecting', () => {
+    console.log('DiscordBot is Reconnecting!');
+});
+client.once('disconnect', () => {
+    console.log('DiscordBot Disconnected!');
 });
 
 // Read messages
