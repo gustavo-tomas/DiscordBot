@@ -2,14 +2,14 @@ import * as Discord from 'discord.js';
 import { commands, execute, help, skip, stop, seixas } from './commands.js';
 
 // Api and authorization keys
-const PREFIX = process.env.PREFIX;
+const PREFIX      = process.env.PREFIX;
 const DISCORD_KEY = process.env.DISCORD_KEY;
 
 // Current voice channel and ID
 let voiceChannel, voiceChannelID;
 
 export const client = new Discord.Client();
-export const queue = new Map();
+export const queue  = new Map();
 
 client.login(DISCORD_KEY);
 
@@ -83,18 +83,20 @@ client.on('message', async message => {
     else {
         message.channel.send("Invalid command!");
     }
-})
+});
 
 // Checks if there are users in curr channel and leaves otherwise
 client.on("voiceStateUpdate", (oldMember, newMember) => {
     if (!voiceChannelID) return;
-    if (oldMember.channelID != newMember.channelID && oldMember.channelID == voiceChannelID) {
+    const membersInVoice = voiceChannel.members.array().length;
+    if (newMember.channelID != oldMember.channelID &&
+        oldMember.channelID == voiceChannelID) {
         const serverQueue = queue.get(voiceChannel.guild.id);
-        if (serverQueue) {
+        if (serverQueue && membersInVoice <= 1) {
             serverQueue.voiceChannel.leave();
             queue.delete(voiceChannel.guild.id);
+            voiceChannel = null;
+            voiceChannelID = null;
         }
-        voiceChannel = null;
-        voiceChannelID = null;
     }
 });
