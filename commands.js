@@ -1,4 +1,4 @@
-import yts from 'yt-search'
+import ytsr from 'ytsr'
 import ytdl from 'ytdl-core'
 import { queue } from './index.js'
 import { client } from './index.js'
@@ -30,7 +30,13 @@ export async function execute(message, serverQueue) {
         videoUrl = args[1]
     } else {
         // Search
-        videoUrl = (await yts(message.content.replace("!p", ""))).videos[0].url
+        const batch = await ytsr(message.content.replace("!p", ""), { limit: 5})
+        for (let video of batch.items) {
+            if (video.type === 'video') {
+                videoUrl = video.url
+                break
+            }
+        }
     }
     const songInfo = await ytdl.getInfo(videoUrl)
     const song = {
