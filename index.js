@@ -1,99 +1,99 @@
-import * as Discord from 'discord.js';
-import { commands, execute, help, skip, stop, seixas } from './commands.js';
+import * as Discord from 'discord.js'
+import { commands, execute, help, skip, stop, seixas } from './commands.js'
 
 // Api and authorization keys
-const PREFIX      = process.env.PREFIX;
-const DISCORD_KEY = process.env.DISCORD_KEY;
+const PREFIX      = process.env.PREFIX
+const DISCORD_KEY = process.env.DISCORD_KEY
 
 // Current voice channel and ID
-let voiceChannel, voiceChannelID;
+let voiceChannel, voiceChannelID
 
-export const client = new Discord.Client();
-export const queue  = new Map();
+export const client = new Discord.Client()
+export const queue  = new Map()
 
-client.login(DISCORD_KEY);
+client.login(DISCORD_KEY)
 
 // Set bot username and status on startup
 client.once('ready', () => {
-    console.log('DiscordBot is Ready!');
-    client.user.setUsername("DJ BALA");
+    console.log('DiscordBot is Ready!')
+    client.user.setUsername("DJ BALA")
     client.user.setPresence({
         status: 'online',
         activity: {
             name: "!help",
             type: "PLAYING"
         }
-    });
-});
+    })
+})
 client.once('reconnecting', () => {
-    console.log('DiscordBot is Reconnecting!');
-});
+    console.log('DiscordBot is Reconnecting!')
+})
 client.once('disconnect', () => {
-    console.log('DiscordBot Disconnected!');
-});
+    console.log('DiscordBot Disconnected!')
+})
 
 // Read messages
 client.on('message', async message => {
-    if (message.author.bot) return;
-    if (!message.content.startsWith(PREFIX)) return;
+    if (message.author.bot) return
+    if (!message.content.startsWith(PREFIX)) return
     
     // Updates current voice channel and channelID
-    voiceChannel   = message.member.voice.channel;
-    voiceChannelID = message.member.voice.channelID;
+    voiceChannel   = message.member.voice.channel
+    voiceChannelID = message.member.voice.channelID
 
     // Music queue
-    const serverQueue = queue.get(message.guild.id);
+    const serverQueue = queue.get(message.guild.id)
 
     // Bot commands
     if (message.content.startsWith(`${PREFIX}play`)   ||
         message.content.startsWith(`${PREFIX}p`)      ||
         message.content.startsWith(`${PREFIX}search`) ||
         message.content.startsWith(`${PREFIX}queue`)) {
-        execute(message, serverQueue);
-        return;
+        execute(message, serverQueue)
+        return
     }
     else if (message.content.startsWith(`${PREFIX}skip`) ||
             message.content.startsWith(`${PREFIX}next`)  ||
             message.content.startsWith(`${PREFIX}n`)) {
-        skip(message, serverQueue);
-        return;
+        skip(message, serverQueue)
+        return
     }
     else if (message.content.startsWith(`${PREFIX}stop`) ||
             message.content.startsWith(`${PREFIX}leave`)) {
-        stop(message, serverQueue);
-        return;
+        stop(message, serverQueue)
+        return
     }
     else if (message.content.startsWith(`${PREFIX}help`) ||
             message.content.startsWith(`${PREFIX}h`)) {
-        help(message);
-        return;
+        help(message)
+        return
     }
     else if (message.content.startsWith(`${PREFIX}commands`) ||
             message.content.startsWith(`${PREFIX}c`)) {
-        commands(message);
-        return;
+        commands(message)
+        return
     }
     else if (message.content.startsWith(`${PREFIX}seixas`)) {
-        seixas(message);
-        return;
+        seixas(message)
+        return
     }
     else {
-        message.channel.send("Invalid command!");
+        message.channel.send("Invalid command!")
     }
 });
 
 // Checks if there are users in curr channel and leaves otherwise
 client.on("voiceStateUpdate", (oldMember, newMember) => {
-    if (!voiceChannelID) return;
-    const membersInVoice = voiceChannel.members.array().length;
+    if (!voiceChannelID) return
+    const membersInVoice = voiceChannel.members.array().length
     if (newMember.channelID != oldMember.channelID &&
         oldMember.channelID == voiceChannelID) {
-        const serverQueue = queue.get(voiceChannel.guild.id);
+        const serverQueue = queue.get(voiceChannel.guild.id)
         if (serverQueue && membersInVoice <= 1) {
-            serverQueue.voiceChannel.leave();
-            queue.delete(voiceChannel.guild.id);
-            voiceChannel = null;
-            voiceChannelID = null;
+            serverQueue.voiceChannel.leave()
+            queue.delete(voiceChannel.guild.id)
+            voiceChannel = null
+            voiceChannelID = null
         }
     }
-});
+})
