@@ -1,5 +1,6 @@
 import ytsr from 'ytsr'
 import ytdl from 'ytdl-core'
+import ytpl from 'ytpl'
 import { queue } from './index.js'
 import { client } from './index.js'
 
@@ -22,11 +23,14 @@ export async function execute(message, serverQueue) {
     
     // Expression matches a url
     var videoUrl
-    const expression = /[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/
+    const expression = /^((?:https?:)?\/\/)?((?:www|m)\.)?((?:youtube\.com|youtu.be))(\/(?:[\w\-]+\?v=|embed\/|v\/)?)([\w\-]+)(\S+)?$/
     const urlExpression = new RegExp(expression)
-
+    
     // Complete URL
     if (args[1].match(urlExpression)) {
+        console.log("IS PLAYLIST")
+        const playlist = await ytpl(args[1])
+        console.log("PLAYLIST = ", playlist)
         videoUrl = args[1]
     } else {
         // Search limited to 5 results
