@@ -24,25 +24,29 @@ export async function execute(message, serverQueue) {
     // Expression matches a url
     var videoUrl
     const expression = /^((?:https?:)?\/\/)?((?:www|m)\.)?((?:youtube\.com|youtu.be))(\/(?:[\w\-]+\?v=|embed\/|v\/)?)([\w\-]+)(\S+)?$/
+    const plExpression = new RegExp(/list=/)
     const urlExpression = new RegExp(expression)
     
     // Complete URL
-    if (args[1].match(urlExpression)) {
-        console.log("IS PLAYLIST")
-        const playlist = await ytpl(args[1])
-        console.log("PLAYLIST = ", playlist)
+    let playlist
+    if (args[1].match(plExpression)) {
+      // TODO: MAKE IT WORK
+    } else if (args[1].match(urlExpression)) {
+        // If url is a video
         videoUrl = args[1]
     } else {
+        // Else treat the message as a search query
         // Search limited to 5 results
         const batch = await ytsr(message.content.replace("!p", ""), { limit: 5 })
         videoUrl = batch.items.filter(video => video.type === 'video')[0].url
     }
-    const songInfo = await ytdl.getInfo(videoUrl)
+    
+    const songInfo = await ytdl.getInfo(video.url);
     const song = {
         title: songInfo.videoDetails.title,
-        url: songInfo.videoDetails.video_url,
-    };
-    
+        url: songInfo.videoDetails.video_url
+    }
+        
     // Checks if song is playing
     if (!serverQueue) {
         // Creating the contract for queue
@@ -59,6 +63,7 @@ export async function execute(message, serverQueue) {
         queue.set(message.guild.id, queueContruct)
         
         // Pushing the song to our songs array
+        // queueContruct.songs.push(song)
         queueContruct.songs.push(song)
         
         try {
