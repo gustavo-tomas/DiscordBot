@@ -29,14 +29,9 @@ export async function execute(message, serverQueue) {
     if (args[1].match(urlExpression)) {
         videoUrl = args[1]
     } else {
-        // Search
-        const batch = await ytsr(message.content.replace("!p", ""), { limit: 5})
-        for (let video of batch.items) {
-            if (video.type === 'video') {
-                videoUrl = video.url
-                break
-            }
-        }
+        // Search limited to 5 results
+        const batch = await ytsr(message.content.replace("!p", ""), { limit: 5 })
+        videoUrl = batch.items.filter(video => video.type === 'video')[0].url
     }
     const songInfo = await ytdl.getInfo(videoUrl)
     const song = {
