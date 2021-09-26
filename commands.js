@@ -1,7 +1,7 @@
 import ytsr from 'ytsr'
 import ytdl from 'ytdl-core'
 import ytpl from 'ytpl'
-import { queue } from './index.js'
+import { queue }  from './index.js'
 import { client } from './index.js'
 
 // Sound values
@@ -21,24 +21,23 @@ export async function execute(message, serverQueue) {
         return message.channel.send("I need permission to join and speak in this channel!")
     }
     
-    // Expression matches a url
-    const expression    = /^((?:https?:)?\/\/)?((?:www|m)\.)?((?:youtube\.com|youtu.be))(\/(?:[\w\-]+\?v=|embed\/|v\/)?)([\w\-]+)(\S+)?$/
+    // Expression matches a playlist
     const plExpression  = new RegExp(/list=/)
-    const urlExpression = new RegExp(expression)
     
     // SongList is an array of type {title: , url: }
     let videoTitle, videoUrl, songList = []
-    if (args[1].match(plExpression)) {
+    if (ytdl.validateURL(args[1])) {
+        // If url is a video
+        videoTitle = (await ytdl.getInfo(args[1])).videoDetails.title
+        videoUrl   = (await ytdl.getInfo(args[1])).videoDetails.video_url
+        songList.push({title: videoTitle, url: videoUrl})
+    } else if (args[1].match(plExpression)) {
+        // Else if url is a playlist 
         // TODO: USE A BETTER WAY THEN FOR LOOP
         const batch = (await ytpl(args[1], { limit: 15 })).items
         for (let i = 0; i < batch.length; i++) {
             songList.push({title: batch[i].title, url: batch[i].url})
         }
-    } else if (args[1].match(urlExpression)) {
-        // If url is a video
-        videoTitle = (await ytdl.getInfo(args[1])).videoDetails.title
-        videoUrl   = (await ytdl.getInfo(args[1])).videoDetails.video_url
-        songList.push({title: videoTitle, url: videoUrl})
     } else {
         // Else treat the message as a search query with search results limited to 5 videos
         const batch = await ytsr(message.content.replace("!p", ""), { limit: 5 })
