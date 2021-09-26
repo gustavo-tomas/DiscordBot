@@ -1,6 +1,7 @@
 import ytsr from 'ytsr'
 import ytdl from 'ytdl-core'
-import { queue } from './index.js'
+import ytpl from 'ytpl'
+import { queue }  from './index.js'
 import { client } from './index.js'
 
 // Sound values
@@ -20,24 +21,27 @@ export async function execute(message, serverQueue) {
         return message.channel.send("I need permission to join and speak in this channel!")
     }
     
-    // Expression matches a url
-    var videoUrl
-    const expression = /[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/
-    const urlExpression = new RegExp(expression)
-
-    // Complete URL
-    if (args[1].match(urlExpression)) {
-        videoUrl = args[1]
+    // Expression matches a playlist
+    const plExpression  = new RegExp(/list=/)
+    
+    // SongList is an array of type {title: , url: }
+    let videoTitle, videoUrl, songList = []
+    if (ytdl.validateURL(args[1])) {
+        // If url is a video
+        videoTitle = (await ytdl.getInfo(args[1])).videoDetails.title
+        videoUrl   = (await ytdl.getInfo(args[1])).videoDetails.video_url
+        songList.push({title: videoTitle, url: videoUrl})
+    } else if (args[1].match(plExpression)) {
+        // Else if url is a playlist 
+        const batch = (await ytpl(args[1], { limit: 15 })).items
+        batch.forEach((item) => songList.push({ title: item.title, url: item.url }))
     } else {
-        // Search limited to 5 results
+        // Else treat the message as a search query with search results limited to 5 videos
         const batch = await ytsr(message.content.replace("!p", ""), { limit: 5 })
-        videoUrl = batch.items.filter(video => video.type === 'video')[0].url
+        videoTitle  = batch.items.filter(video => video.type === 'video')[0].title
+        videoUrl    = batch.items.filter(video => video.type === 'video')[0].url
+        songList.push({title: videoTitle, url: videoUrl})
     }
-    const songInfo = await ytdl.getInfo(videoUrl)
-    const song = {
-        title: songInfo.videoDetails.title,
-        url: songInfo.videoDetails.video_url,
-    };
     
     // Checks if song is playing
     if (!serverQueue) {
@@ -55,7 +59,7 @@ export async function execute(message, serverQueue) {
         queue.set(message.guild.id, queueContruct)
         
         // Pushing the song to our songs array
-        queueContruct.songs.push(song)
+        queueContruct.songs.push(...songList)
         
         try {
             // Here we try to join the voicechat and save our connection into our object.
@@ -71,8 +75,8 @@ export async function execute(message, serverQueue) {
             return message.channel.send(err)
         }
     } else {
-        serverQueue.songs.push(song)
-        return message.channel.send(`**${song.title}** has been added to the queue!`)
+        serverQueue.songs.push(...songList)
+        return message.channel.send(`**${songList[0].title}** has been added to the queue!`)
     }
 }
 
