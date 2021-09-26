@@ -33,11 +33,8 @@ export async function execute(message, serverQueue) {
         songList.push({title: videoTitle, url: videoUrl})
     } else if (args[1].match(plExpression)) {
         // Else if url is a playlist 
-        // TODO: USE A BETTER WAY THEN FOR LOOP
         const batch = (await ytpl(args[1], { limit: 15 })).items
-        for (let i = 0; i < batch.length; i++) {
-            songList.push({title: batch[i].title, url: batch[i].url})
-        }
+        batch.forEach((item) => songList.push({ title: item.title, url: item.url }))
     } else {
         // Else treat the message as a search query with search results limited to 5 videos
         const batch = await ytsr(message.content.replace("!p", ""), { limit: 5 })
