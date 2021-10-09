@@ -153,13 +153,13 @@ export function commands(message) {
 
 export async function seixas(message) {
     const args = message.content.split(" ")
-    let owner = await client.users.fetch(message.guild.ownerID)
+    let bomb = "", owner = await client.users.fetch(message.guild.ownerID)
     if (args.length < 2 || isNaN(Number(args[1]))) {
-        return message.channel.send(`Atende ${owner}`)
+        bomb = `Atende ${owner}\n`
     } else {
         for (let i = 0; i < Number(args[1]); i++) {
-            message.channel.send(`Atende ${owner}`)
+            bomb = bomb + `Atende ${owner}\n`
         }
-        return
     }
+    return message.channel.send(bomb)
 }
