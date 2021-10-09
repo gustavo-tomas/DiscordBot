@@ -21,15 +21,31 @@ export async function execute(message, serverQueue) {
         return message.channel.send("I need permission to join and speak in this channel!")
     }
     
-    // Expression matches a playlist
+    // Expression matches a playlist and stream
     const plExpression  = new RegExp(/list=/)
+    const strExpression = new RegExp(/stream/)
     
     // SongList is an array of type {title: , url: }
     let videoTitle, videoUrl, songList = []
-    if (ytdl.validateURL(args[1])) {
+    
+    /**
+     * See if there is a cleaner way to do streaming. Right now it makes a search and
+     * queues 15 (or less) songs found in that search.
+     */
+    // Request for a radio stream (!stream <genre of song>) limited to 15 songs
+    if (args[0].match(strExpression)) {
+        const batch = await ytsr(message.content.replace("!stream", ""), { limit: 15 })
+        const filteredBatch = batch.items.filter(video => video.type === 'video')
+        for (let i = 0; i < filteredBatch.length; i++) {
+            videoTitle = filteredBatch[i].title
+            videoUrl   = filteredBatch[i].url
+            songList.push({ title: videoTitle, url: videoUrl })
+        }
+    } else if (ytdl.validateURL(args[1])) {
         // If url is a video
-        videoTitle = (await ytdl.getInfo(args[1])).videoDetails.title
-        videoUrl   = (await ytdl.getInfo(args[1])).videoDetails.video_url
+        const videoDetails = (await ytdl.getInfo(args[1])).videoDetails
+        videoTitle = videoDetails.title
+        videoUrl   = videoDetails.video_url
         songList.push({title: videoTitle, url: videoUrl})
     } else if (args[1].match(plExpression)) {
         // Else if url is a playlist 
@@ -38,8 +54,9 @@ export async function execute(message, serverQueue) {
     } else {
         // Else treat the message as a search query with search results limited to 5 videos
         const batch = await ytsr(message.content.replace("!p", ""), { limit: 5 })
-        videoTitle  = batch.items.filter(video => video.type === 'video')[0].title
-        videoUrl    = batch.items.filter(video => video.type === 'video')[0].url
+        const filteredBatch = batch.items.filter(video => video.type === 'video')
+        videoTitle = filteredBatch[0].title
+        videoUrl   = filteredBatch[0].url
         songList.push({title: videoTitle, url: videoUrl})
     }
     

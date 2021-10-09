@@ -48,7 +48,8 @@ client.on('message', async message => {
     if (message.content.startsWith(`${PREFIX}play`)   ||
         message.content.startsWith(`${PREFIX}p`)      ||
         message.content.startsWith(`${PREFIX}search`) ||
-        message.content.startsWith(`${PREFIX}queue`)) {
+        message.content.startsWith(`${PREFIX}queue`)  ||
+        message.content.startsWith(`${PREFIX}stream`)){
         execute(message, serverQueue)
         return
     }
