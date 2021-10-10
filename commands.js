@@ -37,19 +37,17 @@ export async function execute(message, serverQueue) {
         const batch = await ytsr(message.content.replace("!stream", ""), { limit: 15 })
         const filteredBatch = batch.items.filter(video => video.type === 'video')
         filteredBatch.forEach((item) => songList.push({ title: item.title, url: item.url }))
-    } else if (ytdl.validateURL(args[1])) {
-        // If url is a video
-        const videoDetails = (await ytdl.getInfo(args[1])).videoDetails
-        videoTitle = videoDetails.title
-        videoUrl   = videoDetails.video_url
-        songList.push({title: videoTitle, url: videoUrl})
+    } else if (ytdl.validateURL(args[1]) && !(args[1].match(plExpression))) {
+        // If url is a video and not a playlist
+        const details = (await ytdl.getInfo(args[1])).videoDetails
+        songList.push({ title: details.title, url: details.video_url })
     } else if (args[1].match(plExpression)) {
         // Else if url is a playlist 
         const batch = (await ytpl(args[1], { limit: 15 })).items
         batch.forEach((item) => songList.push({ title: item.title, url: item.url }))
     } else {
-        // Else treat the message as a search query with search results limited to 5 videos
-        const batch = await ytsr(message.content.replace("!p", ""), { limit: 5 })
+        // Else treat the message as a search query with search results limited to 1
+        const batch = await ytsr(message.content.replace("!p", ""), { limit: 1 })
         const filteredBatch = batch.items.filter(video => video.type === 'video')
         videoTitle = filteredBatch[0].title
         videoUrl   = filteredBatch[0].url
@@ -66,7 +64,7 @@ export async function execute(message, serverQueue) {
             songs: [],
             volume: startingSoundValue,
             playing: true,
-        };
+        }
 
         // Setting the queue using our contract
         queue.set(message.guild.id, queueContruct)
