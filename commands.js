@@ -36,11 +36,7 @@ export async function execute(message, serverQueue) {
     if (args[0].match(strExpression)) {
         const batch = await ytsr(message.content.replace("!stream", ""), { limit: 15 })
         const filteredBatch = batch.items.filter(video => video.type === 'video')
-        for (let i = 0; i < filteredBatch.length; i++) {
-            videoTitle = filteredBatch[i].title
-            videoUrl   = filteredBatch[i].url
-            songList.push({ title: videoTitle, url: videoUrl })
-        }
+        filteredBatch.forEach((item) => songList.push({ title: item.title, url: item.url }))
     } else if (ytdl.validateURL(args[1])) {
         // If url is a video
         const videoDetails = (await ytdl.getInfo(args[1])).videoDetails
