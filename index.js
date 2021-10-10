@@ -41,47 +41,40 @@ client.on('message', async message => {
     voiceChannel   = message.member.voice.channel
     voiceChannelID = message.member.voice.channelID
 
-    // Music queue
+    // Gets music queue and switch bot command
     const serverQueue = queue.get(message.guild.id)
-
-    // Bot commands
-    if (message.content.startsWith(`${PREFIX}play`)   ||
-        message.content.startsWith(`${PREFIX}p`)      ||
-        message.content.startsWith(`${PREFIX}search`) ||
-        message.content.startsWith(`${PREFIX}queue`)  ||
-        message.content.startsWith(`${PREFIX}stream`)){
-        execute(message, serverQueue)
-        return
+    const command = message.content.split(" ")[0]
+    switch (command) {
+        case `${PREFIX}play`:  case `${PREFIX}search`: case `${PREFIX}p`:
+        case `${PREFIX}queue`: case `${PREFIX}stream`:
+            execute(message, serverQueue)
+            break
+        
+        case `${PREFIX}skip`: case `${PREFIX}next`: case `${PREFIX}n`:
+            skip(message, serverQueue)
+            break
+        
+        case `${PREFIX}stop`: case `${PREFIX}leave`:
+            stop(message, serverQueue)
+            break
+        
+        case `${PREFIX}help`: case `${PREFIX}h`:
+            help(message)
+            break
+        
+        case `${PREFIX}commands`: case `${PREFIX}c`:
+            commands(message)
+            break
+        
+        case `${PREFIX}seixas`:
+            seixas(message)
+            break
+    
+        default:
+            message.channel.send("Invalid command!")
+            break
     }
-    else if (message.content.startsWith(`${PREFIX}skip`) ||
-            message.content.startsWith(`${PREFIX}next`)  ||
-            message.content.startsWith(`${PREFIX}n`)) {
-        skip(message, serverQueue)
-        return
-    }
-    else if (message.content.startsWith(`${PREFIX}stop`) ||
-            message.content.startsWith(`${PREFIX}leave`)) {
-        stop(message, serverQueue)
-        return
-    }
-    else if (message.content.startsWith(`${PREFIX}help`) ||
-            message.content.startsWith(`${PREFIX}h`)) {
-        help(message)
-        return
-    }
-    else if (message.content.startsWith(`${PREFIX}commands`) ||
-            message.content.startsWith(`${PREFIX}c`)) {
-        commands(message)
-        return
-    }
-    else if (message.content.startsWith(`${PREFIX}seixas`)) {
-        seixas(message)
-        return
-    }
-    else {
-        message.channel.send("Invalid command!")
-    }
-});
+})
 
 // Checks if there are users in curr channel and leaves otherwise
 client.on("voiceStateUpdate", (oldMember, newMember) => {
