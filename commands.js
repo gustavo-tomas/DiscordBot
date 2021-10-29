@@ -29,29 +29,36 @@ export async function execute(message, serverQueue) {
     let videoTitle, videoUrl, songList = [];
     
     /**
-     * See if there is a cleaner way to do streaming. Right now it makes a search and
-     * queues 15 (or less) songs found in that search.
+     * See if this can be DRYed
      */
-    // Request for a radio stream (!stream <genre of song>) limited to 15 songs
-    if (args[0].match(strExpression)) {
-        const batch = await ytsr(message.content.replace("!stream", ""), { limit: 15 });
-        const filteredBatch = batch.items.filter(video => video.type === 'video');
-        filteredBatch.forEach((item) => songList.push({ title: item.title, url: item.url }));
-    } else if (ytdl.validateURL(args[1]) && !(args[1].match(plExpression))) {
+    try {
+        // Request for a radio stream (!stream <genre of song>) limited to 15 songs
+        if (args[0].match(strExpression)) {
+            const batch = await ytsr(message.content.replace("!stream", ""), { limit: 15 });
+            const filteredBatch = batch.items.filter(video => video.type === 'video');
+            filteredBatch.forEach((item) => songList.push({ title: item.title, url: item.url }));
+        }
         // If url is a video and not a playlist
-        const details = (await ytdl.getInfo(args[1])).videoDetails;
-        songList.push({ title: details.title, url: details.video_url });
-    } else if (args[1].match(plExpression)) {
+        else if (ytdl.validateURL(args[1]) && !(args[1].match(plExpression))) {
+            const details = (await ytdl.getInfo(args[1])).videoDetails;
+            songList.push({ title: details.title, url: details.video_url });
+        }
         // Else if url is a playlist 
-        const batch = (await ytpl(args[1], { limit: 15 })).items;
-        batch.forEach((item) => songList.push({ title: item.title, url: item.url }));
-    } else {
+        else if (args[1].match(plExpression)) {
+            const batch = (await ytpl(args[1], { limit: 15 })).items;
+            batch.forEach((item) => songList.push({ title: item.title, url: item.url }));
+        }
         // Else treat the message as a search query with search results limited to 1
-        const batch = await ytsr(message.content.replace("!p", ""), { limit: 1 });
-        const filteredBatch = batch.items.filter(video => video.type === 'video');
-        videoTitle = filteredBatch[0].title;
-        videoUrl   = filteredBatch[0].url;
-        songList.push({title: videoTitle, url: videoUrl});
+        else {
+            const batch = await ytsr(message.content.replace("!p", ""), { limit: 1 });
+            const filteredBatch = batch.items.filter(video => video.type === 'video');
+            videoTitle = filteredBatch[0].title;
+            videoUrl   = filteredBatch[0].url;
+            songList.push({title: videoTitle, url: videoUrl});
+        }
+    } catch (error) {
+        console.error("Error when fetching batch: ", error);
+        return message.channel.send("Error when fetching batch: ", error);
     }
     
     // Checks if song is playing
@@ -83,7 +90,7 @@ export async function execute(message, serverQueue) {
             // Printing the error message if the bot fails to join the voicechat
             console.log(err);
             queue.delete(message.guild.id);
-            return message.channel.send(err);
+            return message.channel.send("Error when joining voice: ", err);
         }
     } else {
         serverQueue.songs.push(...songList);
@@ -117,7 +124,12 @@ export function skip(message, serverQueue) {
     if (!serverQueue) {
         return message.channel.send("There is no song to skip!");
     }
-    serverQueue.connection.dispatcher.end();
+    try {
+        serverQueue.connection.dispatcher.end();
+    } catch (error) {
+        console.log("Error when skipping song: ", error);
+        return message.channel.send("Error when skipping song: ", error);
+    }
 }
 
 export function stop(message, serverQueue) {
@@ -127,9 +139,14 @@ export function stop(message, serverQueue) {
     if (!serverQueue) {
         return message.channel.send("There is no song to stop!");
     }
-    message.channel.send("**Leaving...**");
-    serverQueue.songs = [];
-    serverQueue.connection.dispatcher.end();
+    try {
+        message.channel.send("**Leaving...**");
+        serverQueue.songs = [];
+        serverQueue.connection.dispatcher.end();
+    } catch (error) {
+        console.log("Error when leaving: ", error);
+        return message.channel.send("Error when leaving: ", error);
+    }
 }
 
 // Dont forget to update help commands after changes
