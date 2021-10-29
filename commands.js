@@ -86,7 +86,7 @@ export async function execute(message, serverQueue) {
                 queueContruct.connection = connection;
             
                 // Calling the play function to start a song
-                play(message.guild, queueContruct.songs[0]);
+                play(message, message.guild, queueContruct.songs[0]);
             } catch (err) {
                 // Printing the error message if the bot fails to join the voicechat
                 console.error("Error when joining voice: ", err);
@@ -104,30 +104,25 @@ export async function execute(message, serverQueue) {
 }
 
 export function play(guild, song) {
-    try {
-        const serverQueue = queue.get(guild.id);
-        if (!song) {
-            serverQueue.voiceChannel.leave();
-            queue.delete(guild.id);
-            return;
-        }
-        
-        const dispatcher = serverQueue.connection
-            .play(ytdl(song.url))
-            .on("finish", () => {
-                serverQueue.songs.shift();
-                play(guild, serverQueue.songs[0]);
-            })
-            .on("error", error => {
-                console.error("Error when dispatching song: ", error);
-                return message.channel.send("Error when dispatching song: ", error);
-            });
-        dispatcher.setVolumeLogarithmic(serverQueue.volume / 5);
-        serverQueue.textChannel.send(`Started playing: **${song.title}**`);
-    } catch (error) {
-        console.error("Error when playing song: ", error);
-        return message.channel.send("Error when playing song: ", error);
+    const serverQueue = queue.get(guild.id);
+    if (!song) {
+        serverQueue.voiceChannel.leave();
+        queue.delete(guild.id);
+        return;
     }
+
+    const dispatcher = serverQueue.connection
+        .play(ytdl(song.url))
+        .on("finish", () => {
+            serverQueue.songs.shift();
+            play(guild, serverQueue.songs[0]);
+        })
+        .on("error", error => {
+            console.error("Error when dispatching song: ", error);
+            return message.channel.send("Error when dispatching song: ", error);
+        });
+    dispatcher.setVolumeLogarithmic(serverQueue.volume / 5);
+    serverQueue.textChannel.send(`Started playing: **${song.title}**`);
 }
 
 export function skip(message, serverQueue) {
