@@ -103,7 +103,7 @@ export async function execute(message, serverQueue) {
     }
 }
 
-export function play(guild, song) {
+export function play(message, guild, song) {
     const serverQueue = queue.get(guild.id);
     if (!song) {
         serverQueue.voiceChannel.leave();
@@ -115,7 +115,7 @@ export function play(guild, song) {
         .play(ytdl(song.url))
         .on("finish", () => {
             serverQueue.songs.shift();
-            play(guild, serverQueue.songs[0]);
+            play(message, guild, serverQueue.songs[0]);
         })
         .on("error", error => {
             console.error("Error when dispatching song: ", error);
