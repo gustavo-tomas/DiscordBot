@@ -118,7 +118,10 @@ export function play(guild, song) {
                 serverQueue.songs.shift();
                 play(guild, serverQueue.songs[0]);
             })
-            .on("error", error => console.error(error));
+            .on("error", error => {
+                console.error("Error when dispatching song: ", error);
+                return message.channel.send("Error when dispatching song: ", error);
+            });
         dispatcher.setVolumeLogarithmic(serverQueue.volume / 5);
         serverQueue.textChannel.send(`Started playing: **${song.title}**`);
     } catch (error) {
