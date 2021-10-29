@@ -61,40 +61,45 @@ export async function execute(message, serverQueue) {
         return message.channel.send("Error when fetching batch: ", error);
     }
     
-    // Checks if song is playing
-    if (!serverQueue) {
-        // Creating the contract for queue
-        const queueContruct = {
-            textChannel: message.channel,
-            voiceChannel: voiceChannel,
-            connection: null,
-            songs: [],
-            volume: startingSoundValue,
-            playing: true,
+    try {
+        // Checks if song is playing
+        if (!serverQueue) {
+            // Creating the contract for queue
+            const queueContruct = {
+                textChannel: message.channel,
+                voiceChannel: voiceChannel,
+                connection: null,
+                songs: [],
+                volume: startingSoundValue,
+                playing: true,
+            }
+    
+            // Setting the queue using our contract
+            queue.set(message.guild.id, queueContruct);
+            
+            // Pushing the song to our songs array
+            queueContruct.songs.push(...songList);
+            
+            try {
+                // Here we try to join the voicechat and save our connection into our object.
+                var connection = await voiceChannel.join();
+                queueContruct.connection = connection;
+            
+                // Calling the play function to start a song
+                play(message.guild, queueContruct.songs[0]);
+            } catch (err) {
+                // Printing the error message if the bot fails to join the voicechat
+                console.error("Error when joining voice: ", err);
+                queue.delete(message.guild.id);
+                return message.channel.send("Error when joining voice: ", err);
+            }
+        } else {
+            serverQueue.songs.push(...songList);
+            return message.channel.send(`**${songList[0].title}** has been added to the queue!`);
         }
-
-        // Setting the queue using our contract
-        queue.set(message.guild.id, queueContruct);
-        
-        // Pushing the song to our songs array
-        queueContruct.songs.push(...songList);
-        
-        try {
-            // Here we try to join the voicechat and save our connection into our object.
-            var connection = await voiceChannel.join();
-            queueContruct.connection = connection;
-        
-            // Calling the play function to start a song
-            play(message.guild, queueContruct.songs[0]);
-        } catch (err) {
-            // Printing the error message if the bot fails to join the voicechat
-            console.error("Error when joining voice: ", err);
-            queue.delete(message.guild.id);
-            return message.channel.send("Error when joining voice: ", err);
-        }
-    } else {
-        serverQueue.songs.push(...songList);
-        return message.channel.send(`**${songList[0].title}** has been added to the queue!`);
+    } catch (error) {
+        console.error("Error when playing song: ", error);
+        return message.channel.send("Error when playing song: ", error);
     }
 }
 
