@@ -58,52 +58,47 @@ export async function execute(message, serverQueue) {
         }
     } catch (error) {
         console.error("Error when fetching batch: ", error);
-        return message.channel.send("Error when fetching batch: ", error);
+        return message.channel.send(`Error when fetching batch: ${error}`);
     }
     
-    try {
-        // Checks if song is playing
-        if (!serverQueue) {
-            // Creating the contract for queue
-            const queueContruct = {
-                textChannel: message.channel,
-                voiceChannel: voiceChannel,
-                connection: null,
-                songs: [],
-                volume: startingSoundValue,
-                playing: true,
-            }
-    
-            // Setting the queue using our contract
-            queue.set(message.guild.id, queueContruct);
-            
-            // Pushing the song to our songs array
-            queueContruct.songs.push(...songList);
-            
-            try {
-                // Here we try to join the voicechat and save our connection into our object.
-                var connection = await voiceChannel.join();
-                queueContruct.connection = connection;
-            
-                // Calling the play function to start a song
-                play(message, message.guild, queueContruct.songs[0]);
-            } catch (err) {
-                // Printing the error message if the bot fails to join the voicechat
-                console.error("Error when joining voice: ", err);
-                queue.delete(message.guild.id);
-                return message.channel.send("Error when joining voice: ", err);
-            }
-        } else {
-            serverQueue.songs.push(...songList);
-            return message.channel.send(`**${songList[0].title}** has been added to the queue!`);
+    // Checks if song is playing
+    if (!serverQueue) {
+        // Creating the contract for queue
+        const queueContruct = {
+            textChannel: message.channel,
+            voiceChannel: voiceChannel,
+            connection: null,
+            songs: [],
+            volume: startingSoundValue,
+            playing: true,
         }
-    } catch (error) {
-        console.error("Error when playing song: ", error);
-        return message.channel.send("Error when playing song: ", error);
+
+        // Setting the queue using our contract
+        queue.set(message.guild.id, queueContruct);
+        
+        // Pushing the song to our songs array
+        queueContruct.songs.push(...songList);
+        
+        try {
+            // Here we try to join the voicechat and save our connection into our object.
+            var connection = await voiceChannel.join();
+            queueContruct.connection = connection;
+        
+            // Calling the play function to start a song
+            play(message.guild, queueContruct.songs[0]);
+        } catch (error) {
+            // Printing the error message if the bot fails to join the voicechat
+            console.error("Error when joining voice: ", err);
+            queue.delete(message.guild.id);
+            return message.channel.send(`**Error when joining voice:** ${error}`);
+        }
+    } else {
+        serverQueue.songs.push(...songList);
+        return message.channel.send(`**${songList[0].title}** has been added to the queue!`);
     }
 }
 
-export function play(message, guild, song) {
+export function play(guild, song) {
     const serverQueue = queue.get(guild.id);
     if (!song) {
         serverQueue.voiceChannel.leave();
@@ -115,11 +110,11 @@ export function play(message, guild, song) {
         .play(ytdl(song.url))
         .on("finish", () => {
             serverQueue.songs.shift();
-            play(message, guild, serverQueue.songs[0]);
+            play(guild, serverQueue.songs[0]);
         })
         .on("error", error => {
             console.error("Error when dispatching song: ", error);
-            return message.channel.send("Error when dispatching song: ", error);
+            return serverQueue.textChannel.send(`**Error when dispatching song:** ${error}`);
         });
     dispatcher.setVolumeLogarithmic(serverQueue.volume / 5);
     serverQueue.textChannel.send(`Started playing: **${song.title}**`);
@@ -136,7 +131,7 @@ export function skip(message, serverQueue) {
         serverQueue.connection.dispatcher.end();
     } catch (error) {
         console.log("Error when skipping song: ", error);
-        return message.channel.send("Error when skipping song: ", error);
+        return message.channel.send(`**Error when skipping song:** ${error}`);
     }
 }
 
@@ -154,7 +149,7 @@ export function stop(message, serverQueue) {
         return;
     } catch (error) {
         console.log("Error when leaving: ", error);
-        return message.channel.send("Error when leaving: ", error);
+        return message.channel.send(`Error when leaving: ${error}`);
     }
 }
 
