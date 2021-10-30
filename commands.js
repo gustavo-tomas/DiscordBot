@@ -48,9 +48,9 @@ export async function execute(message, serverQueue) {
             const batch = (await ytpl(args[1], { limit: 15 })).items;
             batch.forEach((item) => songList.push({ title: item.title, url: item.url }));
         }
-        // Else treat the message as a search query with search results limited to 1
+        // Else treat the message as a search query with search results limited to 5
         else {
-            const batch = await ytsr(message.content.replace("!p", ""), { limit: 1 });
+            const batch = await ytsr(message.content.replace("!p", ""), { limit: 5 });
             const filteredBatch = batch.items.filter(video => video.type === 'video');
             videoTitle = filteredBatch[0].title;
             videoUrl   = filteredBatch[0].url;
@@ -107,7 +107,10 @@ export function play(guild, song) {
     }
 
     const dispatcher = serverQueue.connection
-        .play(ytdl(song.url))
+        .play(ytdl(song.url, {
+            quality: 'highestaudio',
+            filter: 'audioonly',
+        }))
         .on("finish", () => {
             serverQueue.songs.shift();
             play(guild, serverQueue.songs[0]);
