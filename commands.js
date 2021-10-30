@@ -107,7 +107,10 @@ export function play(guild, song) {
     }
 
     const dispatcher = serverQueue.connection
-        .play(ytdl(song.url))
+        .play(ytdl(song.url, {
+            quality: 'highestaudio',
+            filter: 'audioonly',
+        }))
         .on("finish", () => {
             serverQueue.songs.shift();
             play(guild, serverQueue.songs[0]);
