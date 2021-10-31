@@ -20,6 +20,10 @@ export async function execute(message, serverQueue) {
     if (!permissions.has("CONNECT") || !permissions.has("SPEAK")) {
         return message.channel.send("I need permission to join and speak in this channel!");
     }
+
+    if (!args[1]) {
+        return message.channel.send("Song name can't be null!");
+    }
     
     // Expression matches a playlist and stream
     const plExpression  = new RegExp(/list=/);
@@ -83,12 +87,12 @@ export async function execute(message, serverQueue) {
             // Here we try to join the voicechat and save our connection into our object.
             var connection = await voiceChannel.join();
             queueContruct.connection = connection;
-        
+
             // Calling the play function to start a song
             play(message.guild, queueContruct.songs[0]);
         } catch (error) {
             // Printing the error message if the bot fails to join the voicechat
-            console.error("Error when joining voice: ", err);
+            console.error("Error when joining voice: ", error);
             queue.delete(message.guild.id);
             return message.channel.send(`**Error when joining voice:** ${error}`);
         }
@@ -121,6 +125,24 @@ export function play(guild, song) {
         });
     dispatcher.setVolumeLogarithmic(serverQueue.volume / 5);
     serverQueue.textChannel.send(`Started playing: **${song.title}**`);
+}
+
+// TODO: pause needs two commands to pause and then resume (bug)
+export function pause(message, serverQueue, command) {
+    if (!message.member.voice.channel) {
+        return message.channel.send("You have to be in a voice channel to pause/resume the music!");
+    }
+    if (!serverQueue) {
+        return message.channel.send("There is no song to pause/resume!");
+    }
+    if (command === "pause" && !serverQueue.connection.dispatcher.paused) {
+        serverQueue.connection.dispatcher.pause();
+        return message.channel.send(`PAUSED`);
+    }
+    else if (command === "resume" && !serverQueue.connection.dispatcher.resumed) {
+        serverQueue.connection.dispatcher.resume();
+        return message.channel.send(`RESUMED`);
+    }
 }
 
 export function skip(message, serverQueue) {

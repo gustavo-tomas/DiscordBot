@@ -1,5 +1,5 @@
 import * as Discord from 'discord.js'
-import { commands, execute, help, skip, stop, seixas } from './commands.js'
+import { commands, execute, help, skip, stop, seixas, pause } from './commands.js'
 
 // Api and authorization keys
 const PREFIX      = process.env.PREFIX;
@@ -64,6 +64,10 @@ client.on('message', async message => {
         
         case `${PREFIX}commands`: case `${PREFIX}c`:
             commands(message);
+            break;
+        
+        case `${PREFIX}pause`: case `${PREFIX}resume`:
+            pause(message, serverQueue, command.split("!")[1]);
             break;
         
         case `${PREFIX}seixas`:
