@@ -8,7 +8,7 @@ const DISCORD_KEY = process.env.DISCORD_KEY;
 // Current voice channel and ID
 let voiceChannel, voiceChannelID;
 
-export const client = new Discord.Client();
+export const client = new Discord.Client({ intents: [Discord.Intents.FLAGS.GUILDS, Discord.Intents.FLAGS.GUILD_MESSAGES] });
 export const queue  = new Map();
 
 client.login(DISCORD_KEY);
@@ -33,7 +33,7 @@ client.once('disconnect', () => {
 })
 
 // Read messages
-client.on('message', async message => {
+client.on('messageCreate', async message => {
     if (message.author.bot) return;
     if (!message.content.startsWith(PREFIX)) return;
     

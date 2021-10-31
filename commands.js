@@ -1,7 +1,8 @@
 import ytsr from 'ytsr';
 import ytdl from 'ytdl-core';
 import ytpl from 'ytpl';
-import { queue }  from './index.js';
+import { joinVoiceChannel } from '@discordjs/voice';
+import { queue } from './index.js';
 import { client } from './index.js';
 
 // Sound values
@@ -85,7 +86,11 @@ export async function execute(message, serverQueue) {
         
         try {
             // Here we try to join the voicechat and save our connection into our object.
-            var connection = await voiceChannel.join();
+            var connection = joinVoiceChannel({
+                channelId: message.member.voice.channel,
+                guildId: message.guild.id,
+                adapterCreator: message.guild.voiceAdapterCreator
+            });
             queueContruct.connection = connection;
 
             // Calling the play function to start a song
