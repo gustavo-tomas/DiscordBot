@@ -1,97 +1,123 @@
 import * as Discord from 'discord.js'
-import { commands, execute, help, skip, stop, seixas, pause } from './commands.js'
+import * as Command from './commands.js'
 
 // Api and authorization keys
-const PREFIX      = process.env.PREFIX;
 const DISCORD_KEY = process.env.DISCORD_KEY;
 
-// Current voice channel and ID
-let voiceChannel, voiceChannelID;
-
-export const client = new Discord.Client({ intents: [Discord.Intents.FLAGS.GUILDS, Discord.Intents.FLAGS.GUILD_MESSAGES] });
+export const client = new Discord.Client({
+	intents: [
+		Discord.Intents.FLAGS.GUILDS,
+		Discord.Intents.FLAGS.GUILD_MESSAGES,
+		Discord.Intents.FLAGS.GUILD_VOICE_STATES
+	]
+});
 export const queue  = new Map();
 
-client.login(DISCORD_KEY);
-
-// Set bot username and status on startup
 client.once('ready', () => {
-    console.log('DiscordBot is Ready!');
-    client.user.setUsername("DJ BALA");
-    client.user.setPresence({
-        status: 'online',
-        activity: {
-            name: "!help",
-            type: "PLAYING"
-        }
-    });
+	// Set bot username and status on startup
+	console.log('DiscordBot is Ready!');
+	client.user.setUsername("DJ BALA");
+	client.user.setPresence({
+		status: 'online',
+		activity: {
+			name: "!help",
+			type: "PLAYING"
+		}
+	});
+
+	// Set available commands
+	const guildId = "445060828874670091";
+	const guild = client.guilds.cache.get(guildId);
+	let commands;
+
+	if (guild) {
+		commands = guild.commands;
+	} else {
+		commands = client.application.commands;
+	}
+
+	commands.create({
+		name: "ping",
+		description: "Tests the bot"
+	});
+
+	commands.create({
+		name: "play",
+		description: "Plays or Queues a song",
+		options: [{
+			name: "song",
+			description: "Song name or url",
+			required: true,
+			type: Discord.Constants.ApplicationCommandOptionTypes.STRING
+		}]
+	});
+
+	commands.create({
+		name: "pause",
+		description: "Pauses current song"
+	});
+
+	commands.create({
+		name: "resume",
+		description: "Resumes current song"
+	});
+
+	commands.create({
+		name: "skip",
+		description: "Skips current song"
+	});
+
+	commands.create({
+		name: "stop",
+		description: "Stops the bot"
+	});
 });
+
 client.once('reconnecting', () => {
-    console.log('DiscordBot is Reconnecting!');
-})
+	console.log('DiscordBot is Reconnecting!');
+});
+
 client.once('disconnect', () => {
-    console.log('DiscordBot Disconnected!');
-})
+	console.log('DiscordBot Disconnected!');
+});
 
 // Read messages
-client.on('messageCreate', async message => {
-    if (message.author.bot) return;
-    if (!message.content.startsWith(PREFIX)) return;
-    
-    // Updates current voice channel and channelID
-    voiceChannel   = message.member.voice.channel;
-    voiceChannelID = message.member.voice.channelID;
+client.on('interactionCreate', async interaction => {
+	if (!interaction.isCommand()) return;
 
-    // Gets music queue and switch bot command
-    const serverQueue = queue.get(message.guild.id);
-    const command = message.content.split(" ")[0].toLowerCase();
-    switch (command) {
-        case `${PREFIX}play`:  case `${PREFIX}search`: case `${PREFIX}p`:
-        case `${PREFIX}queue`: case `${PREFIX}stream`:
-            execute(message, serverQueue);
-            break;
-        
-        case `${PREFIX}skip`: case `${PREFIX}next`: case `${PREFIX}n`:
-            skip(message, serverQueue);
-            break;
-        
-        case `${PREFIX}stop`: case `${PREFIX}leave`:
-            stop(message, serverQueue);
-            break;
-        
-        case `${PREFIX}help`: case `${PREFIX}h`:
-            help(message);
-            break;
-        
-        case `${PREFIX}commands`: case `${PREFIX}c`:
-            commands(message);
-            break;
-        
-        case `${PREFIX}pause`: case `${PREFIX}resume`:
-            pause(message, serverQueue, command.split("!")[1]);
-            break;
-        
-        case `${PREFIX}seixas`:
-            seixas(message);
-            break;
-    
-        default:
-            message.channel.send("Invalid command!");
-            break;
-    }
-})
+	const { commandName, options } = interaction;
 
-// Checks if there are users in curr channel and leaves otherwise
-client.on("voiceStateUpdate", (oldMember, newMember) => {
-    if (!voiceChannelID) return;
-    const membersInVoice = voiceChannel.members.array().length;
-    if (newMember.channelID != oldMember.channelID &&
-        oldMember.channelID == voiceChannelID) {
-        const serverQueue = queue.get(voiceChannel.guild.id);
-        if (serverQueue && membersInVoice <= 1) {
-            serverQueue.voiceChannel.leave();
-            queue.delete(voiceChannel.guild.id);
-            voiceChannel = null;
-            voiceChannelID = null;
-        }
-    }
-})
+	switch (commandName) {
+		case "ping":
+			await interaction.reply({ content: "Pong!", fetchReply: true });
+			break;
+		
+		case "play":
+			const song = options.getString("song");
+			await interaction.reply({ content: song, fetchReply: true });
+			Command.execute(interaction, song);
+			break;
+			
+		case "pause":
+			console.log("Not implemented yet");
+			break;
+		
+		case "resume":
+			console.log("Not implemented yet");
+			break;
+			
+		case "skip":
+			console.log("Not implemented yet");
+			break;
+		
+		case "stop":
+			console.log("Not implemented yet");
+			break;
+		
+		default:
+			console.log("Invalid command!");
+			break;
+	}
+});
+
+client.login(DISCORD_KEY);
