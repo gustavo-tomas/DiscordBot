@@ -1,3 +1,4 @@
+import { MessageEmbed } from 'discord.js';
 import { queue } from './index.js';
 import ytdl from 'ytdl-core';
 import ytsr from 'ytsr';
@@ -6,11 +7,22 @@ import * as Voice from '@discordjs/voice';
 
 // console.log(Voice.generateDependencyReport());
 
+// TODO: MAKE EMBEDS DRYER (including errors)
+function createEmbed(color, title, description) {
+	const messageEmbed = new MessageEmbed()
+		.setColor(color)
+		.setTitle(title)
+		.setDescription(description)
+	return messageEmbed;
+}
+
 export async function execute(interaction, song, serverQueue) {
 
 	const voiceChannel = interaction.member.voice.channel;
 	if (!voiceChannel) {
-		return interaction.channel.send(`**You need to be in a voice channel to play music!**`);
+		const message = "**You need to be in a voice channel to play music!**";
+		const messageEmbed = createEmbed("RED", "\:sound: Not in voice", message);
+		return interaction.channel.send({ embeds: [messageEmbed] });
 	}
 
 	// Expression matches a playlist and stream
@@ -43,7 +55,8 @@ export async function execute(interaction, song, serverQueue) {
 		}
 	} catch (error) {
 		console.error("Error when fetching batch: ", error);
-		return interaction.channel.send(`**Error when fetching batch:** ${error}`);
+		const messageEmbed = createEmbed("RED", "\:exclamation: Error", error);
+		return interaction.channel.send({ embeds: [messageEmbed] });
 	}
 
 	// Checks if song is playing
@@ -77,11 +90,13 @@ export async function execute(interaction, song, serverQueue) {
 			// Printing the error message if the bot fails to join the voicechat
 			console.error("Error when joining voice: ", error);
 			queue.delete(interaction.guild.id);
-			return interaction.channel.send(`**Error when joining voice:** ${error}`);
+			const messageEmbed = createEmbed("RED", "\:exclamation: Error", error);
+			return interaction.channel.send({ embeds: [messageEmbed] });
 		}
 	} else {
 		serverQueue.songs.push(...songList);
-		return interaction.channel.send(`**${songList[0].title}** has been added to the queue!`);
+		const messageEmbed = createEmbed("BLUE", "\:musical_note: Queued", `**${songList[0].title}**`);
+		return interaction.channel.send({ embeds: [messageEmbed] });
 	}
 }
 
@@ -94,7 +109,7 @@ function play(interaction, song) {
 	}
 
 	// Using opus type to improve performance (inline volume disables this)
-	const stream = ytdl(song.url, { filter: "audioonly", quality: "highestaudio" });
+	const stream = ytdl(song.url, { filter: "audioonly" });
 	const resource = Voice.createAudioResource(stream, { inputType: Voice.StreamType.WebmOpus });
 	const player = Voice.createAudioPlayer();
 	player.play(resource);
@@ -105,40 +120,62 @@ function play(interaction, song) {
 		})
 		.on("error", error => {
 			console.error(`Error when playing song: ${error}`);
-			return interaction.channel.send(`**Error when playing song:** ${error}`);
+			const messageEmbed = createEmbed("RED", "\:exclamation: Error", error);
+			return interaction.channel.send({ embeds: [messageEmbed] });
 		});
 	serverQueue.player = player;
 	serverQueue.connection.subscribe(player);
-	interaction.channel.send(`Started playing: **${song.title}**`);
+	const messageEmbed = createEmbed("GREEN", "\:notes: Started Playing", `**${song.title}**`);
+	return interaction.channel.send({ embeds: [messageEmbed] });
 }
 
 export function pause(interaction, serverQueue) {
+	if (!serverQueue) {
+		const messageEmbed = createEmbed("RED", "\:grey_exclamation: Error", `**There is no song to pause!**`);
+		return interaction.channel.send({ embeds: [messageEmbed] });
+	}
 	serverQueue.player.pause();
-	return interaction.channel.send(`**Paused!**`);
+	const messageEmbed = createEmbed("PURPLE", "\:play_pause: Paused", `**Music has been paused**`);
+	return interaction.channel.send({ embeds: [messageEmbed] });
 }
 
 export function resume(interaction, serverQueue) {
+	if (!serverQueue) {
+		const messageEmbed = createEmbed("RED", "\:grey_exclamation: Error", `**There is no song to resume!**`);
+		return interaction.channel.send({ embeds: [messageEmbed] });
+	}
 	serverQueue.player.unpause();
-	return interaction.channel.send(`**Resumed!**`);
+	const messageEmbed = createEmbed("PURPLE", "\:play_pause: Resumed", `**Music has been resumed**`);
+	return interaction.channel.send({ embeds: [messageEmbed] });
 }
 
 export function skip(interaction, serverQueue) {
 	if (!serverQueue) {
-		return interaction.channel.send(`**There is no song to skip!**`);
+		const messageEmbed = createEmbed("RED", "\:grey_exclamation: Error", `**There is no song to skip!**`);
+		return interaction.channel.send({ embeds: [messageEmbed] });
 	}
 	serverQueue.songs.shift();
-	interaction.channel.send(`**Skipping...**`);
+	const messageEmbed = createEmbed("BLUE", "\:fast_forward: Skipping", `**Skipping song...**`);
+	interaction.channel.send({ embeds: [messageEmbed] });
 	play(interaction, serverQueue.songs[0]);
 	return;
 }
 
 export function stop(interaction, serverQueue) {
 	if (!serverQueue) {
-		return interaction.channel.send(`**There is no song to stop!**`);
+		const messageEmbed = createEmbed("RED", "\:grey_exclamation: Error", `**There is no song to stop!**`);
+		return interaction.channel.send({ embeds: [messageEmbed] });
 	}
-	interaction.channel.send("**Leaving...**");
 	serverQueue.songs = [];
 	serverQueue.connection.destroy();
 	queue.delete(interaction.guild.id);
-	return;
+	const messageEmbed = createEmbed("YELLOW", "\:octagonal_sign: Leaving", `**Leaving voice**`);
+	return interaction.channel.send({ embeds: [messageEmbed] });
+}
+
+export function ping(interaction, client) {
+	const latency = `Latency is **${Date.now() - interaction.createdTimestamp}ms.\n` +
+	`**API Latency is **${Math.round(client.ws.ping)}ms**`;
+	const messageEmbed = createEmbed("AQUA", "\:ping_pong: Ping Result", latency);
+	return interaction.channel.send({ embeds: [messageEmbed] });
 }

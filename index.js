@@ -21,7 +21,7 @@ client.once('ready', () => {
 	client.user.setPresence({
 		status: 'online',
 		activity: {
-			name: "!help",
+			name: "/ping",
 			type: "PLAYING"
 		}
 	});
@@ -36,11 +36,6 @@ client.once('ready', () => {
 	} else {
 		commands = client.application.commands;
 	}
-
-	commands.create({
-		name: "ping",
-		description: "Tests the bot"
-	});
 
 	commands.create({
 		name: "play",
@@ -72,6 +67,11 @@ client.once('ready', () => {
 		name: "stop",
 		description: "Stops the bot"
 	});
+
+	commands.create({
+		name: "ping",
+		description: "Tests the bots latency"
+	});
 });
 
 client.once('reconnecting', () => {
@@ -93,32 +93,34 @@ client.on('interactionCreate', async interaction => {
 
 	switch (commandName) {
 		case "ping":
-			await interaction.reply({ content: "Pong!", fetchReply: true });
+			await interaction.reply("...");
+			await 
+			Command.ping(interaction, client);
 			break;
 		
 		case "play":
 			const song = options.getString("song");
-			await interaction.reply({ content: song, fetchReply: true });
+			await interaction.reply({ content: "...", fetchReply: true });
 			Command.execute(interaction, song, serverQueue);
 			break;
 			
 		case "pause":
-			await interaction.reply({ content: "...", fetchReply: true });
+			await interaction.reply("...");
 			Command.pause(interaction, serverQueue);
 			break;
 		
 		case "resume":
-			await interaction.reply({ content: "...", fetchReply: true });
+			await interaction.reply("...");
 			Command.resume(interaction, serverQueue);
 			break;
 			
 		case "skip":
-			await interaction.reply({ content: "...", fetchReply: true });
+			await interaction.reply("...");
 			Command.skip(interaction, serverQueue);
 			break;
 		
 		case "stop":
-			await interaction.reply({ content: "...", fetchReply: true });
+			await interaction.reply("...");
 			Command.stop(interaction, serverQueue);
 			break;
 		
