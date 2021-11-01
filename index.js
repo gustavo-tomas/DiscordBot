@@ -3,6 +3,7 @@ import * as Command from './commands.js'
 
 // Api and authorization keys
 const DISCORD_KEY = process.env.DISCORD_KEY;
+let voiceChannel;
 
 export const client = new Discord.Client({
 	intents: [
@@ -85,7 +86,10 @@ client.once('disconnect', () => {
 client.on('interactionCreate', async interaction => {
 	if (!interaction.isCommand()) return;
 
+	voiceChannel = interaction.member.voice.channel;
+
 	const { commandName, options } = interaction;
+	const serverQueue = queue.get(interaction.guild.id);
 
 	switch (commandName) {
 		case "ping":
@@ -95,23 +99,27 @@ client.on('interactionCreate', async interaction => {
 		case "play":
 			const song = options.getString("song");
 			await interaction.reply({ content: song, fetchReply: true });
-			Command.execute(interaction, song);
+			Command.execute(interaction, song, serverQueue);
 			break;
 			
 		case "pause":
-			console.log("Not implemented yet");
+			await interaction.reply({ content: "...", fetchReply: true });
+			Command.pause(interaction, serverQueue);
 			break;
 		
 		case "resume":
-			console.log("Not implemented yet");
+			await interaction.reply({ content: "...", fetchReply: true });
+			Command.resume(interaction, serverQueue);
 			break;
 			
 		case "skip":
-			console.log("Not implemented yet");
+			await interaction.reply({ content: "...", fetchReply: true });
+			Command.skip(interaction, serverQueue);
 			break;
 		
 		case "stop":
-			console.log("Not implemented yet");
+			await interaction.reply({ content: "...", fetchReply: true });
+			Command.stop(interaction, serverQueue);
 			break;
 		
 		default:
@@ -119,5 +127,19 @@ client.on('interactionCreate', async interaction => {
 			break;
 	}
 });
+
+// Checks if there are users in curr channel and leaves otherwise
+// client.on("voiceStateUpdate", () => {
+// 	if (!voiceChannel) return;
+// 	console.log(Object.keys(voiceChannel.members).length);
+// 	if (Object.keys(voiceChannel.members).length <= 1) {
+// 		console.log("EMPTY!");
+// 		// const serverQueue = queue.get(voiceChannel.guild.id);
+// 		// serverQueue.connection.destroy();
+// 		queue.delete(voiceChannel.guild.id);
+// 	} else {
+// 		console.log("NOT EMPTY!");
+// 	}
+// });
 
 client.login(DISCORD_KEY);
