@@ -55,7 +55,7 @@ export async function execute(interaction, song, serverQueue) {
 		}
 	} catch (error) {
 		console.error("Error when fetching batch: ", error);
-		const messageEmbed = createEmbed("RED", "\:exclamation: Error", error);
+		const messageEmbed = createEmbed("RED", "\:exclamation: **Error**", error.toString());
 		return interaction.channel.send({ embeds: [messageEmbed] });
 	}
 
@@ -90,7 +90,7 @@ export async function execute(interaction, song, serverQueue) {
 			// Printing the error message if the bot fails to join the voicechat
 			console.error("Error when joining voice: ", error);
 			queue.delete(interaction.guild.id);
-			const messageEmbed = createEmbed("RED", "\:exclamation: Error", error);
+			const messageEmbed = createEmbed("RED", "\:exclamation: **Error**", error.toString());
 			return interaction.channel.send({ embeds: [messageEmbed] });
 		}
 	} else {
@@ -120,7 +120,7 @@ function play(interaction, song) {
 		})
 		.on("error", error => {
 			console.error(`Error when playing song: ${error}`);
-			const messageEmbed = createEmbed("RED", "\:exclamation: Error", error);
+			const messageEmbed = createEmbed("RED", "\:exclamation: **Error**", error.toString());
 			return interaction.channel.send({ embeds: [messageEmbed] });
 		});
 	serverQueue.player = player;
