@@ -3,7 +3,7 @@ import * as Command from './commands.js'
 
 // Api and authorization keys
 const DISCORD_KEY = process.env.DISCORD_KEY;
-let voiceChannel;
+const GUILD_ID    = process.env.GUILD_ID;
 
 export const client = new Discord.Client({
 	intents: [
@@ -20,15 +20,14 @@ client.once('ready', () => {
 	client.user.setUsername("DJ BALA");
 	client.user.setPresence({
 		status: 'online',
-		activity: {
+		activities: [{
 			name: "/ping",
 			type: "PLAYING"
-		}
+		}]
 	});
 
 	// Set available commands
-	const guildId = "445060828874670091";
-	const guild = client.guilds.cache.get(guildId);
+	const guild = client.guilds.cache.get(GUILD_ID);
 	let commands;
 
 	if (guild) {
@@ -85,8 +84,14 @@ client.once('disconnect', () => {
 // Read messages
 client.on('interactionCreate', async interaction => {
 	if (!interaction.isCommand()) return;
-
-	voiceChannel = interaction.member.voice.channel;
+	if (!interaction.member.voice.channel) {
+		const messageEmbed = new Discord.MessageEmbed()
+			.setColor("RED")
+			.setTitle("Not In Voice")
+			.setDescription("**You need to be in a voice channel to use commands**");
+		await interaction.reply("...");
+		return interaction.channel.send({ embeds: [messageEmbed] });
+	}
 
 	const { commandName, options } = interaction;
 	const serverQueue = queue.get(interaction.guild.id);
@@ -94,7 +99,6 @@ client.on('interactionCreate', async interaction => {
 	switch (commandName) {
 		case "ping":
 			await interaction.reply("...");
-			await 
 			Command.ping(interaction, client);
 			break;
 		
@@ -129,19 +133,5 @@ client.on('interactionCreate', async interaction => {
 			break;
 	}
 });
-
-// Checks if there are users in curr channel and leaves otherwise
-// client.on("voiceStateUpdate", () => {
-// 	if (!voiceChannel) return;
-// 	console.log(Object.keys(voiceChannel.members).length);
-// 	if (Object.keys(voiceChannel.members).length <= 1) {
-// 		console.log("EMPTY!");
-// 		// const serverQueue = queue.get(voiceChannel.guild.id);
-// 		// serverQueue.connection.destroy();
-// 		queue.delete(voiceChannel.guild.id);
-// 	} else {
-// 		console.log("NOT EMPTY!");
-// 	}
-// });
 
 client.login(DISCORD_KEY);
