@@ -1,4 +1,11 @@
 @import url('https://fonts.googleapis.com/css2?family=Chakra+Petch&display=swap');
+@import url('https://fonts.googleapis.com/icon?family=Material+Icons');
+
+:root {
+  --disc-black: #23272A;
+  --disc-blue: #456ae0;
+  --font-white: #fff;
+}
 
 html {
   padding: 0px;
@@ -10,12 +17,66 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  font-size: 1.5rem;
-  color: #fff;
-  background-color: #23272A;
+  color: var(--font-white);
+  background-color: var(--disc-black);
+}
+
+h1 {
+  padding: 0px;
+  margin: 0px;
+}
+
+p {
+  display: inline;
+}
+
+footer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--disc-black);
+  border-top-right-radius: 50px;
+  border-top-left-radius: 50px;
+  width: 330px;
+  padding-bottom: 5px;
+  position: absolute;
+  bottom: -10px;
+}
+
+/* Dont try this at home */
+a {
+  text-decoration: none;
+  color: var(--font-white);
+  padding: 5px;
+}
+
+#title {
+  font-size: 3.5rem;
 }
 
 #box {
-  background-color: #456ae0;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--disc-blue);
   border-radius: 5px;
+  width: 65vw;
+  height: 60vh;
+  padding: 30px 20px;
+}
+
+.answer {
+  padding-bottom: 25px;
+}
+
+.arrow {
+  font-size: 12px;
+}
+
+.fa-github {
+  color: var(--font-white);
+  padding: 5px;
 }
