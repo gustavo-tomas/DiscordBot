@@ -127,7 +127,7 @@ function play(interaction, song) {
 
 	// Using opus type to improve performance (inline volume disables this)
 	const stream = ytdl(song.url, { filter: "audioonly" });
-	const resource = Voice.createAudioResource(stream, { inputType: Voice.StreamType.WebmOpus });
+	const resource = Voice.createAudioResource(stream, { inputType: Voice.StreamType.Arbitrary });
 	const player = Voice.createAudioPlayer();
 	player.play(resource);
 	player
