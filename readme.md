@@ -1,4 +1,4 @@
-# DiscordBot 🚅
+# DiscordBot 📻
 
 ### Who? 🤔
 DiscordBot (aka DJ bala) is a music bot made for discord using [Discord.js](https://discord.js.org/#/docs/main/stable/general/welcome). DJ bala supports slash commands and can play songs given the url, name or playlist link. My boy even sends messages to the chat in embed form. 
