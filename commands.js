@@ -36,9 +36,10 @@ function sendEmbedError(interaction, message, error) {
  * @param {Discord.Interaction} interaction the interaction that used commands
  * @param {string} song The url/name provided
  * @param {object} serverQueue Queue of the current player
+ * @param {Number} tries Number of tries to attempt refetching a batch
  * @returns 
  */
-export async function execute(interaction, song, serverQueue) {
+export async function execute(interaction, song, serverQueue, tries = 3) {
 
 	const voiceChannel = interaction.member.voice.channel;
 
@@ -71,7 +72,10 @@ export async function execute(interaction, song, serverQueue) {
 			songList.push({title: videoTitle, url: videoUrl});
 		}
 	} catch (error) {
-		return sendEmbedError(interaction, "Error when fetching batch: ", error);
+		sendEmbedError(interaction, "Error when fetching batch: ", error);
+		return tries <= 0
+			? sendEmbedError(interaction, "Tried 3 times: ", error)
+			: execute(interaction, song, serverQueue, tries-1);
 	}
 
 	// Checks if song is playing
@@ -115,9 +119,10 @@ export async function execute(interaction, song, serverQueue) {
  * Plays all songs in the queue
  * @param {Discord.Interaction} interaction The interaction that called play
  * @param {object} song Song to be played
+ * @param {Number} tries Number of tries to attempt playing a song
  * @returns 
  */
-function play(interaction, song) {
+function play(interaction, song, tries = 5) {
 	const serverQueue = queue.get(interaction.guild.id);
 
 	if (!song) {
@@ -136,7 +141,10 @@ function play(interaction, song) {
 			play(interaction, serverQueue.songs[0]);
 		})
 		.on("error", error => {
-			return sendEmbedError(interaction, "Error when playing song: ", error);
+			sendEmbedError(interaction, "Error when playing song: ", error);
+			return tries <= 0
+				? sendEmbedError(interaction, "Tried 5 times: ", error)
+				: play(interaction, song, tries - 1);
 		});
 	serverQueue.player = player;
 	serverQueue.connection.subscribe(player);
