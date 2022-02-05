@@ -4,6 +4,7 @@ import * as Command from './commands.js'
 // Api and authorization keys
 const DISCORD_KEY = process.env.DISCORD_KEY;
 const GUILD_ID    = process.env.GUILD_ID;
+const OWNER_ID    = process.env.OWNER_ID;
 
 export const client = new Discord.Client({
 	intents: [
@@ -132,6 +133,13 @@ client.on('interactionCreate', async interaction => {
 			console.log("Invalid command!");
 			break;
 	}
+});
+
+// Send message to owner everytime someone leaves or enters a VC
+client.on("voiceStateUpdate", (oldState, newState) => {
+	client.users.fetch(OWNER_ID).then(user => {
+		user.send("Alguém entrou server kkkkk");
+	});
 });
 
 client.login(DISCORD_KEY);

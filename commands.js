@@ -39,7 +39,7 @@ function sendEmbedError(interaction, message, error) {
  * @param {Number} tries Number of tries to attempt refetching a batch
  * @returns 
  */
-export async function execute(interaction, song, serverQueue, tries = 3) {
+export async function execute(interaction, song, serverQueue) {
 
 	const voiceChannel = interaction.member.voice.channel;
 
@@ -73,9 +73,7 @@ export async function execute(interaction, song, serverQueue, tries = 3) {
 		}
 	} catch (error) {
 		sendEmbedError(interaction, "Error when fetching batch: ", error);
-		return tries <= 0
-			? sendEmbedError(interaction, "Tried 3 times: ", error)
-			: execute(interaction, song, serverQueue, tries-1);
+		return;
 	}
 
 	// Checks if song is playing
@@ -122,7 +120,7 @@ export async function execute(interaction, song, serverQueue, tries = 3) {
  * @param {Number} tries Number of tries to attempt playing a song
  * @returns 
  */
-function play(interaction, song, tries = 5) {
+function play(interaction, song) {
 	const serverQueue = queue.get(interaction.guild.id);
 
 	if (!song) {
@@ -142,9 +140,7 @@ function play(interaction, song, tries = 5) {
 		})
 		.on("error", error => {
 			sendEmbedError(interaction, "Error when playing song: ", error);
-			return tries <= 0
-				? sendEmbedError(interaction, "Tried 5 times: ", error)
-				: play(interaction, song, tries - 1);
+			return;
 		});
 	serverQueue.player = player;
 	serverQueue.connection.subscribe(player);
